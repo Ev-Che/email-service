@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+  redis:
+    image: redis
+
+  email_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./app:/usr/src/app
+    ports:
+      - "8001:8000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+    command: celery -A app.celery.worker worker --loglevel=INFO
+    depends_on:
+      - email_service
+      - redis
