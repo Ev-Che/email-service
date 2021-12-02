@@ -9,7 +9,8 @@ from loguru import logger
 
 class AbstractMailSender(ABC):
     TRADE_SUCCESS_TOPIC = 'Success Trade'
-    TRADE_SUCCESS_MESSAGE = 'The trade was successful'
+    SUCCESS_MESSAGE = ('You have new Trade in the TradePlatform system. '
+                       'Check it.')
 
     def __init__(self):
         self.smtp_server = os.environ.get('SMTP_SERVER')
@@ -19,13 +20,13 @@ class AbstractMailSender(ABC):
         self.context = ssl.create_default_context()
 
     @abstractmethod
-    def send_mail(self, receiver: str, message: EmailMessage):
+    def send_mail(self, message: EmailMessage):
         pass
 
 
 class MailSender(AbstractMailSender):
 
-    def send_mail(self, receiver, message):
+    def send_mail(self, message):
         with smtplib.SMTP_SSL(self.smtp_server, self.port,
                               context=self.context) as server:
             logger.debug('Server started')
@@ -34,12 +35,16 @@ class MailSender(AbstractMailSender):
             server.send_message(message)
             logger.debug('message sent')
 
-    def send_trade_success_mail(self, receiver: str):
-        message = self._create_message(sender=self.sender, receiver=receiver,
-                                       topic=self.TRADE_SUCCESS_TOPIC,
-                                       body=self.TRADE_SUCCESS_MESSAGE)
-
-        self.send_mail(receiver=receiver, message=message)
+    def send_trade_success_mails(self, receivers: list):
+        for receiver_mail in receivers:
+            message = self._create_message(
+                sender=self.sender, receiver=receiver_mail,
+                topic=self.TRADE_SUCCESS_TOPIC,
+                body=self.SUCCESS_MESSAGE)
+            try:
+                self.send_mail(message=message)
+            except Exception:
+                continue
 
     @staticmethod
     def _create_message(sender: str, receiver: str, topic: str,

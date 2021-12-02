@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+from loguru import logger
 
-from app.api.views import router
+from app.api.kafka_consumer import Consumer
 
 app = FastAPI()
-app.include_router(router)
+
+logger.debug('Starting listening')
+Consumer().listen()

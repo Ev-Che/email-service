@@ -5,7 +5,7 @@ from app.celery.worker import celery
 
 
 @celery.task
-def send_message_task(receiver):
+def send_message_task(receivers: list):
     logger.debug('stark task send_message')
-    MailSender().send_trade_success_mail(receiver)
+    MailSender().send_trade_success_mails(receivers=receivers)
     logger.debug('finish task send_message')

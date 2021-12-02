@@ -9,6 +9,7 @@ loguru = "*"
 python-dotenv = "*"
 celery = "*"
 redis = "*"
+kafka-python = "*"
 
 [dev-packages]
 
